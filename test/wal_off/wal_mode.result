@@ -41,7 +41,8 @@ box.snapshot()
 ...
 box.snapshot()
 ---
-- error: Can't create xlog
+- error: file '/home/georgy/projects/tarantool-5/test/var/wal/00000000000000000031.snap'
+    already exists
 ...
 space:truncate()
 ---
