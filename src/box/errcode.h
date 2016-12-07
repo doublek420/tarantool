@@ -177,6 +177,8 @@ struct errcode_record {
 	/*122 */_(ER_COMMIT_IN_SUB_STMT,	"Can not commit transaction in a nested statement") \
 	/*123 */_(ER_ROLLBACK_IN_SUB_STMT,	"Rollback called in a nested statement") \
 	/*125 */_(ER_DECOMPRESSION,		"Decompression error: %s") \
+	/*126 */_(ER_VINYL_INVALID_XLOG_META,	"Invalid vinyl xlog meta: %s") \
+	/*127 */_(ER_VINYL_INVALID_META,	"Invalid vinyl meta: %s") \
 
 /*
  * !IMPORTANT! Please follow instructions at start of the file

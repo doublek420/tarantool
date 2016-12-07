@@ -388,11 +388,13 @@ box.snapshot()
 ...
 box.snapshot()
 ---
-- error: Can't create xlog
+- error: file '/home/georgy/projects/tarantool-5/test/var/app/00000000000000000055.snap'
+    already exists
 ...
 box.snapshot()
 ---
-- error: Can't create xlog
+- error: file '/home/georgy/projects/tarantool-5/test/var/app/00000000000000000055.snap'
+    already exists
 ...
 f = fiber.create(function () fiber.sleep(1) end)
 ---

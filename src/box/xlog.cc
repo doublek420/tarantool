@@ -198,20 +198,21 @@ xlog_meta_parse(struct xlog_meta *meta, const char **data,
 	/*
 	 * Parse version string, i.e. "0.12" or "0.13"
 	 */
+	char version[10];
 	eol = (const char *)memchr(pos, '\n', end - pos);
-	if (eol == end || (eol - pos) >= (ptrdiff_t) sizeof(meta->version)) {
+	if (eol == end || (eol - pos) >= (ptrdiff_t) sizeof(version)) {
 		tnt_error(XlogError, "failed to parse xlog version string");
 		return -1;
 	}
-	memcpy(meta->version, pos, eol - pos);
-	meta->version[eol - pos] = '\0';
+	memcpy(version, pos, eol - pos);
+	version[eol - pos] = '\0';
 	pos = eol + 1;
 	assert(pos <= end);
-	if (strncmp(meta->version, v12, sizeof(v12)) != 0 &&
-	    strncmp(meta->version, v13, sizeof(v13)) != 0) {
+	if (strncmp(version, v12, sizeof(v12)) != 0 &&
+	    strncmp(version, v13, sizeof(v13)) != 0) {
 		tnt_error(XlogError,
 			  "unsupported file format version %s",
-			  meta->version);
+			  version);
 		return -1;
 	}
 
