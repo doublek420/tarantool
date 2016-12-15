@@ -1136,8 +1136,8 @@ struct vy_page_read_task {
 	struct vy_page_info page_info;
 	/** tuple format to create tuples - ref. counted */
 	struct tuple_format *format;
-	/** part count - needed to create tuples */
-	uint32_t part_count;
+	/** key_def needs to create tuples */
+	struct key_def *key_def;
 	/** vy_run with fd - ref. counted */
 	struct vy_run *run;
 	/** vy_env - contains environment with task mempool */
@@ -7233,7 +7233,7 @@ vy_run_iterator_cache_clean(struct vy_run_iterator *itr)
  */
 static struct vy_page *
 vy_page_read(const struct vy_page_info *page_info, int fd,
-	     const struct tuple_format *format, uint32_t part_count,
+	     const struct tuple_format *format, struct key_def *key_def,
 	     ZSTD_DStream *zdctx)
 {
 	/* read xlog tx from xlog file */
@@ -7344,7 +7344,7 @@ vy_page_read_cb(struct coio_task *base)
 	if (zdctx == NULL)
 		return -1;
 	task->page = vy_page_read(&task->page_info, task->run->fd,
-				  task->format, task->part_count, zdctx);
+				  task->format, task->key_def, zdctx);
 	return task->page != NULL ? 0 : -1;
 }
 
@@ -7421,15 +7421,18 @@ vy_run_iterator_load_page(struct vy_run_iterator *itr, uint32_t page_no,
 		task->page_info = *page_info;
 		task->format = index->format;
 		tuple_format_ref(task->format, 1);
-		task->part_count = index->key_def->part_count;
+		task->key_def = index->key_def;
 		task->env = index->env;
 		task->page = NULL;
+
+		vy_index_ref(index);
 
 		/* Post task to coeio */
 		rc = coio_task_post(&task->base, TIMEOUT_INFINITY);
 		if (rc < 0)
 			return -1; /* timed out or cancelled */
 
+		vy_index_unref(index);
 		/* task was posted to worker and finished */
 		page = task->page;
 		if (page == NULL)
@@ -7459,7 +7462,7 @@ vy_run_iterator_load_page(struct vy_run_iterator *itr, uint32_t page_no,
 		if (zdctx == NULL)
 			return -1;
 		page = vy_page_read(page_info, itr->run->fd, index->format,
-				    index->key_def->part_count, zdctx);
+				    index->key_def, zdctx);
 	}
 
 	if (page == NULL) {
