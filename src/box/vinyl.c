@@ -3396,9 +3396,8 @@ vy_range_recover_run(struct vy_range *range, int run_id)
 
 	struct xlog_meta *meta = &cursor.meta;
 	if (strcmp(meta->filetype, vy_xlog_meta_type[VY_FILE_INDEX]) != 0) {
-		char errstr[512];
-		snprintf(errstr, sizeof(errstr), "%s: unknown filetype %s", path, meta->filetype);
-		diag_set(ClientError, ER_VINYL_INVALID_XLOG_META, errstr);
+		diag_set(ClientError, ER_INVALID_XLOG_TYPE,
+			 vy_xlog_meta_type[VY_FILE_INDEX], meta->filetype);
 		goto fail_close;
 	}
 
@@ -3413,10 +3412,9 @@ vy_range_recover_run(struct vy_range *range, int run_id)
 		goto fail_close;
 	}
 	if (run_id_check != run_id) {
-		char errstr[512];
-		snprintf(errstr, sizeof(errstr), "Incorrect run_id: "
-			 "expected %d found %d", run_id, run_id_check);
-		diag_set(ClientError, ER_VINYL_INVALID_META, errstr);
+		diag_set(ClientError, ER_INVALID_RUN_ID,
+			 (long long) run_id_check,
+			 (long long) run_id);
 		goto fail_close;
 	}
 
@@ -3449,9 +3447,8 @@ vy_range_recover_run(struct vy_range *range, int run_id)
 		goto fail;
 	meta = &cursor.meta;
 	if (strcmp(meta->filetype, vy_xlog_meta_type[VY_FILE_RUN]) != 0) {
-		char errstr[512];
-		snprintf(errstr, sizeof(errstr), "%s: unknown filetype %s", path, meta->filetype);
-		diag_set(ClientError, ER_VINYL_INVALID_XLOG_META, errstr);
+		diag_set(ClientError, ER_INVALID_XLOG_TYPE,
+			 vy_xlog_meta_type[VY_FILE_RUN], meta->filetype);
 		goto fail_close;
 	}
 	run->fd = cursor.fd;
