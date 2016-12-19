@@ -21,7 +21,7 @@ box.snapshot()
 ...
 box.snapshot()
 ---
-- error: file '/home/georgy/projects/tarantool-5/test/var/box/00000000000000000273.snap'
+- error: file '<dir>/box/00000000000000000273.snap'
     already exists
 ...
 space:insert{2, 'second tuple'}
@@ -31,7 +31,7 @@ space:insert{2, 'second tuple'}
 # Make 'var' directory read-only.
 box.snapshot()
 ---
-- error: failed to create file '/home/georgy/projects/tarantool-5/test/var/box/00000000000000000274.snap'
+- error: failed to create file '<dir>/box/00000000000000000274.snap'
 ...
 box.error.last().errno
 ---

@@ -405,7 +405,8 @@ xdir_open_cursor(struct xdir *dir, int64_t signature,
 	struct xlog_meta *meta = &cursor->meta;
 	if (strcmp(meta->filetype, dir->filetype) != 0) {
 		xlog_cursor_close(cursor, false);
-		tnt_error(XlogError, "%s: unknown filetype", filename);
+		diag_set(ClientError, ER_INVALID_XLOG_TYPE,
+			 dir->filetype, meta->filetype);
 		return -1;
 	}
 	if (!tt_uuid_is_nil(dir->server_uuid) &&
