@@ -37,7 +37,6 @@
 #include "crc32.h"
 #include "fio.h"
 #include "third_party/tarantool_eio.h"
-#include <msgpuck.h>
 #include "scoped_guard.h"
 
 #include "coeio_file.h"
@@ -53,11 +52,6 @@
  * |  0xd5  |  type  |       data      |
  * +--------+--------+--------+--------+
  */
-typedef uint32_t log_magic_t;
-
-static const log_magic_t row_marker = mp_bswap_u32(0xd5ba0bab); /* host byte order */
-static const log_magic_t zrow_marker = mp_bswap_u32(0xd5ba0bba); /* host byte order */
-static const log_magic_t eof_marker = mp_bswap_u32(0xd510aded); /* host byte order */
 static const char inprogress_suffix[] = ".inprogress";
 
 enum {
@@ -1205,7 +1199,7 @@ xlog_cursor_pos(struct xlog_cursor *cursor)
  * @retval  0 data fully decompressed
  * @retval  1 need more bytes in the output buffer
  */
-static int
+int
 xlog_cursor_decompress(char **rows, char *rows_end, const char **data,
 		       const char *data_end, ZSTD_DStream *zdctx)
 {
@@ -1227,36 +1221,13 @@ xlog_cursor_decompress(char **rows, char *rows_end, const char **data,
 }
 
 /**
- * xlog fixheader struct
- */
-struct xlog_fixheader {
-	/**
-	 * xlog tx magic, row_marker for plain xrows
-	 * or zrow_marker for compressed.
-	 */
-	log_magic_t magic;
-	/**
-	 * crc32 for the previous xlog tx, not used now
-	 */
-	uint32_t crc32p;
-	/**
-	 * crc32 for current xlog tx
-	 */
-	uint32_t crc32c;
-	/**
-	 * xlog tx data length excluding fixheader
-	 */
-	uint32_t len;
-};
-
-/**
  * Decode xlog tx header, set up magic, crc32c and len
  *
  * @retval 0 for success
  * @retval -1 for error
  * @retval count of bytes left to parse header
  */
-static ssize_t
+ssize_t
 xlog_fixheader_decode(struct xlog_fixheader *fixheader,
 		      const char **data, const char *data_end)
 {
